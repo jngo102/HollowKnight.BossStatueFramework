@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<RootNamespace>BossStatueFramework</RootNamespace>
 		<TargetFramework>net472</TargetFramework>
-		<Description>Library for adding custom boss fights to the Hall of Gods.</Description>
+		<Description>Library for adding custom boss statues to the Hall of Gods.</Description>
 		<Copyright>Copyright © jngo102 2025</Copyright>
 		<AssemblyVersion>1.0.0.0</AssemblyVersion>
 		<OutputPath>bin\$(Configuration)\</OutputPath>

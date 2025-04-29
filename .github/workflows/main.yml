@@ -18,8 +18,10 @@ jobs:
         with:
             apiPath: References/
 
-      - name: Setup MSBuild
-        run: sudo apt-get install -y nuget mono-devel mono-xbuild
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+            dotnet-version: "8"
 
       - name: Restore packages
         run: nuget restore BossStatueFramework.csproj
