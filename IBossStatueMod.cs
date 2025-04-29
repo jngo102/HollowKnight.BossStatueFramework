@@ -78,7 +78,7 @@ public interface IBossStatueMod {
     public float SpriteScale { get; }
 
     /// <summary>
-    /// The type of switch that this boss statue has; set to <cref="AltSwitchType.None" /> for no alt.
+    /// The type of switch that this boss statue has; set to <see cref="AltSwitchType.None" /> for no alt.
     /// </summary>
     public AltSwitchType AltType { get; }
 

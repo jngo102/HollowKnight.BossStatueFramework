@@ -6,48 +6,43 @@ using System.Reflection;
 
 namespace BossStatueFramework;
 
-internal class BossStatueFramework : Mod, ILocalSettings<LocalSettings> {
-    internal static BossStatueFramework Instance { get; private set; }
-
+internal class BossStatueFramework() : Mod("Boss Statue Framework"), ILocalSettings<LocalSettings>
+{
     internal static readonly List<IBossStatueMod> BossStatueMods = [];
 
-    internal static LocalSettings LocalSettings = new();
-
-    public BossStatueFramework() : base("Boss Statue Framework") { }
+    private static LocalSettings _localSettings = new();
 
     public override string GetVersion() => Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
     internal static int ModCount => BossStatueMods.Count;
 
     public override void Initialize() {
-        Instance = this;
-
         GetBossMods();
-
         InitMod();
     }
 
-    internal void InitMod() {
+    private void InitMod() {
         ModHooks.AfterSavegameLoadHook += AfterSaveGameLoad;
         ModHooks.NewGameHook += AddComponent;
-        ModHooks.GetPlayerVariableHook += Instance.GetPlayerVariable;
-        ModHooks.SetPlayerVariableHook += Instance.SetPlayerVariable;
+        ModHooks.GetPlayerVariableHook += GetPlayerVariable;
+        ModHooks.SetPlayerVariableHook += SetPlayerVariable;
     }
 
     private void AfterSaveGameLoad(SaveGameData data) => AddComponent();
 
     private object GetPlayerVariable(Type type, string key, object orig) {
-        return LocalSettings.Completions.TryGetValue(key, out var completion) ? completion : orig;
+        return _localSettings.Completions.TryGetValue(key, out var completion) ? completion : orig;
     }
 
     private object SetPlayerVariable(Type type, string key, object obj) {
-        if (LocalSettings.Completions.ContainsKey(key)) {
-            LocalSettings.Completions[key] = (BossStatue.Completion)obj;
+        if (_localSettings.Completions.ContainsKey(key)) {
+            _localSettings.Completions[key] = (BossStatue.Completion)obj;
         }
         return obj;
     }
 
     private void AddComponent() {
+        if (ModCount <= 0) return;
         GameManager.instance.gameObject.GetOrAddComponent<WorkshopRemodeler>();
     }
 
@@ -58,14 +53,14 @@ internal class BossStatueFramework : Mod, ILocalSettings<LocalSettings> {
             if (mod is IBossStatueMod bossMod) {
                 Log("Found boss mod: " + bossMod.GetType().Name);
                 BossStatueMods.Add(bossMod);
-                if (!LocalSettings.Completions.ContainsKey(bossMod.PlayerData)) {
-                    LocalSettings.Completions[bossMod.PlayerData] = new BossStatue.Completion();
+                if (!_localSettings.Completions.ContainsKey(bossMod.PlayerData)) {
+                    _localSettings.Completions[bossMod.PlayerData] = new BossStatue.Completion();
                 }
             }
 
         }
     }
-    public void OnLoadLocal(LocalSettings settings) => LocalSettings = settings;
+    public void OnLoadLocal(LocalSettings settings) => _localSettings = settings;
 
-    public LocalSettings OnSaveLocal() => LocalSettings;
+    public LocalSettings OnSaveLocal() => _localSettings;
 }

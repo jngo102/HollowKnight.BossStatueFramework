@@ -36,9 +36,7 @@ internal class WorkshopRemodeler : MonoBehaviour {
     private void ModifyWorkshop(Scene prevScene, Scene nextScene) {
         ClearILHooks();
 
-        if (nextScene.name != "GG_Workshop") {
-            return;
-        }
+        if (nextScene.name != "GG_Workshop") return;
 
         AddILHooks();
         CreateDarknessPrefab();
@@ -79,14 +77,17 @@ internal class WorkshopRemodeler : MonoBehaviour {
             area.cameraXMin = LeftWallX + 14;
         }
 
-        static IEnumerator ModifyWorkshopRoutine() {
+        IEnumerator DisableSceneBorderRoutine() {
             yield return new WaitUntil(() => FindObjectsOfType<GameObject>().
-                FirstOrDefault(go => go.name.Contains("SceneBorder") && go.transform.position.x < 0) != null);
+                FirstOrDefault(go => go.name.Contains("SceneBorder") && go.transform.position.x < 0));
 
             var sceneBorder = FindObjectsOfType<GameObject>().FirstOrDefault(go => go.name.Contains("SceneBorder") && go.transform.position.x < 0);
-            sceneBorder.SetActive(false);
+            sceneBorder?.SetActive(false);
+        }
 
-            yield return new WaitUntil(() => GameObject.Find("Chunk 1 0") != null);
+        IEnumerator UpdateChunkRoutine()
+        {
+            yield return new WaitUntil(() => GameObject.Find("Chunk 1 0"));
 
             var chunk = GameObject.Find("Chunk 1 0");
             var chunkRenderer = chunk.GetComponent<MeshRenderer>();
@@ -98,17 +99,27 @@ internal class WorkshopRemodeler : MonoBehaviour {
             points[28].x = LeftWallX;
             points[29].x = LeftWallX;
             col.points = points;
+        }
 
-            yield return new WaitUntil(() => GameObject.Find("World Edge v2") != null);
+        IEnumerator DisableWorldEdgeRoutine()
+        {
+            yield return new WaitUntil(() => GameObject.Find("World Edge v2"));
 
             GameObject.Find("World Edge v2").SetActive(false);
+        }
 
-            yield return new WaitUntil(() => GameObject.Find("side_pillar_left") != null);
+        IEnumerator DisableSidePillarRoutine()
+        {
+            yield return new WaitUntil(() => GameObject.Find("side_pillar_left"));
+            
             // Remove left pillar collider
             GameObject.Find("side_pillar_left").SetActive(false);
         }
 
-        GameManager.instance.StartCoroutine(ModifyWorkshopRoutine());
+        StartCoroutine(DisableSceneBorderRoutine());
+        StartCoroutine(UpdateChunkRoutine());
+        StartCoroutine(DisableWorldEdgeRoutine());
+        StartCoroutine(DisableSidePillarRoutine());
     }
 
     private void AddFloor() {
@@ -186,7 +197,7 @@ internal class WorkshopRemodeler : MonoBehaviour {
         IL.CameraLockArea.ValidateBounds += ModifyMinBoundX;
     }
 
-    internal static void ClearILHooks() {
+    private static void ClearILHooks() {
         IL.CameraController.IsAtSceneBounds -= ModifyMinBoundX;
         IL.CameraController.IsTouchingSides -= ModifyMinBoundX;
         IL.CameraController.IsAtHorizontalSceneBounds -= ModifyMinBoundX;
@@ -217,7 +228,8 @@ internal class WorkshopRemodeler : MonoBehaviour {
 
         for (var modIdx = 0; modIdx < BossStatueFramework.ModCount; modIdx++) {
             var bossMod = BossStatueFramework.BossStatueMods[modIdx];
-            var statue = Instantiate(statuePrefab, new Vector2(StatueStartX - StatueSpacingX * modIdx, statuePrefab.transform.GetPositionY()), Quaternion.identity);
+            var statue = Instantiate(statuePrefab, new Vector2(StatueStartX - StatueSpacingX * modIdx, statuePrefab.transform.position.y), Quaternion.identity);
+            statue.name = $"{StatueNamePrefix}{bossMod.GetType().Name}";
             var bossStatue = statue.GetComponent<BossStatue>();
 
             bossSummaryBoard.bossStatues.Add(bossStatue);
@@ -252,6 +264,10 @@ internal class WorkshopRemodeler : MonoBehaviour {
                 descriptionSheet = bossMod.DescriptionKey,
             };
             bossStatue.bossDetails = bossDetails;
+            
+            var dreamReturn = statue.GetComponentInChildren<TransitionPoint>();
+            dreamReturn.name =
+                $"door_dreamReturnGG_GG_Statue_{bossMod.GetType().Name}";;
 
             var statueDisplay = bossStatue.statueDisplay;
             var statueSpriteHeight = bossMod.Sprite.bounds.size.y * bossMod.SpriteScale;
@@ -409,7 +425,7 @@ internal class WorkshopRemodeler : MonoBehaviour {
         } while (posX > LeftWallX);
         
         static IEnumerator RaiseRoofRoutine() {
-            yield return new WaitUntil(() => GameObject.Find("Roof Collider (3)") != null);
+            yield return new WaitUntil(() => GameObject.Find("Roof Collider (3)"));
 
             var roofCol = GameObject.Find("Roof Collider (3)").GetComponent<PolygonCollider2D>();
             var points = roofCol.points;
@@ -418,7 +434,7 @@ internal class WorkshopRemodeler : MonoBehaviour {
             roofCol.points = points;
         }
 
-        GameManager.instance.StartCoroutine(RaiseRoofRoutine());
+        StartCoroutine(RaiseRoofRoutine());
     }
 }
 
