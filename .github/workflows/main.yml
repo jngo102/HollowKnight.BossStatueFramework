@@ -24,7 +24,7 @@ jobs:
             dotnet-version: "8"
 
       - name: Restore packages
-        run: nuget restore BossStatueFramework.csproj
+        run: dotnet restore BossStatueFramework.csproj
 
       - name: Build project
         run: dotnet build --configuration Release
