@@ -1,0 +1,103 @@
+﻿<!-- Credit to SFGrenade https://github.com/SFGrenade -->
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<RootNamespace>BossStatueFramework</RootNamespace>
+		<TargetFramework>net472</TargetFramework>
+		<Description>Library for adding custom boss fights to the Hall of Gods.</Description>
+		<Copyright>Copyright © jngo102 2025</Copyright>
+		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<OutputPath>bin\$(Configuration)\</OutputPath>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+		<DebugSymbols>true</DebugSymbols>
+		<DebugType>full</DebugType>
+		<DocumentationFile>bin/Debug/BossStatueFramework.xml</DocumentationFile>
+		<Optimize>false</Optimize>
+		<OutputPath>bin\Debug\</OutputPath>
+		<DefineConstants>DEBUG;TRACE</DefineConstants>
+		<ErrorReport>prompt</ErrorReport>
+		<WarningLevel>4</WarningLevel>
+		<!-- Path to DLL references required to build mod -->
+		<LocalRefs>$(MSBuildProgramFiles32)/Steam/steamapps/common/Hollow Knight/hollow_knight_Data/Managed</LocalRefs>
+		<!-- Path to Mods folder -->
+		<ModsPath>$(LocalRefs)/Mods</ModsPath>
+		<!-- The folder that exports will be generated in -->
+		<ExportDir>Output</ExportDir>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+		<DebugType>pdbonly</DebugType>
+		<DocumentationFile>bin/Release/BossStatueFramework.xml</DocumentationFile>
+		<Optimize>true</Optimize>
+		<OutputPath>bin\Release\</OutputPath>
+		<DefineConstants>TRACE</DefineConstants>
+		<ErrorReport>prompt</ErrorReport>
+		<WarningLevel>4</WarningLevel>
+		<!-- Path to DLL references required to build mod -->
+		<LocalRefs>References</LocalRefs>
+		<!-- The folder that exports will be generated in -->
+		<ExportDir>Output</ExportDir>
+	</PropertyGroup>
+	<Target Condition="'$(Configuration)' == 'Release'" Name="PackageMod" AfterTargets="PostBuildEvent">
+		<RemoveDir Condition="Exists('$(ExportDir)')" Directories="$(ExportDir)" />
+		<MakeDir Directories="$(ExportDir)" />
+		<MakeDir Directories="$(ExportDir)/zip" />
+		<Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ExportDir)" />
+		<Copy Condition="'$(DocumentationFile)' != ''" SourceFiles="ReadMe.md;$(TargetPath);$(TargetDir)/$(TargetName).pdb;$(TargetDir)/$(TargetName).xml" DestinationFolder="$(ExportDir)/zip" />
+		<Copy Condition="'$(DocumentationFile)' == ''" SourceFiles="ReadMe.md;$(TargetPath);$(TargetDir)/$(TargetName).pdb" DestinationFolder="$(ExportDir)/zip/" />
+		<ZipDirectory SourceDirectory="$(ExportDir)/zip" DestinationFile="$(ExportDir)/$(TargetName).zip" />
+		<RemoveDir Directories="$(ExportDir)/zip" />
+		<PropertyGroup>
+			<OutputFileString>$(AssemblyVersion)</OutputFileString>
+		</PropertyGroup>
+		<WriteLinesToFile File="Version.txt" Lines="$(OutputFileString)" Overwrite="true" Encoding="UTF-8" />
+	</Target>
+	<Target Condition="'$(Configuration)' == 'Debug'" Name="CopyMod" AfterTargets="PostBuildEvent">
+		<RemoveDir Condition="Exists('$(ModsPath)/$(TargetName)')" Directories="$(ModsPath)/$(TargetName)" />
+		<MakeDir Directories="$(ModsPath)/$(TargetName)" />
+		<Copy SourceFiles="$(TargetPath);$(TargetDir)/$(TargetName).pdb" DestinationFolder="$(ModsPath)/$(TargetName)" />
+		<!-- Uncomment this if you have the game installed on Steam, Steam is in your PATH environment variable, and you want to run the game upon build. -->
+		<Exec Command="steam steam://rungameid/367520" />
+	</Target>
+	<ItemGroup>
+		<Reference Include="Assembly-CSharp">
+			<HintPath>$(LocalRefs)/Assembly-CSharp.dll</HintPath>
+		</Reference>
+		<Reference Include="MMHOOK_Assembly-CSharp">
+			<HintPath>$(LocalRefs)/MMHOOK_Assembly-CSharp.dll</HintPath>
+		</Reference>
+		<Reference Include="Mono.Cecil">
+			<HintPath>$(LocalRefs)/Mono.Cecil.dll</HintPath>
+		</Reference>
+		<Reference Include="MonoMod.RuntimeDetour">
+			<HintPath>$(LocalRefs)/MonoMod.RuntimeDetour.dll</HintPath>
+		</Reference>
+		<Reference Include="MonoMod.Utils">
+			<HintPath>$(LocalRefs)/MonoMod.Utils.dll</HintPath>
+		</Reference>
+		<Reference Include="netstandard">
+			<HintPath>$(LocalRefs)/netstandard.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine">
+			<HintPath>$(LocalRefs)/UnityEngine.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.AnimationModule">
+			<HintPath>$(LocalRefs)/UnityEngine.AnimationModule.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.CoreModule">
+			<HintPath>$(LocalRefs)/UnityEngine.CoreModule.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.Physics2DModule">
+			<HintPath>$(LocalRefs)/UnityEngine.Physics2DModule.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.UI">
+			<HintPath>$(LocalRefs)/UnityEngine.UI.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.UIModule">
+			<HintPath>$(LocalRefs)/UnityEngine.UIModule.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="ReadMe.md" />
+	</ItemGroup>
+</Project>

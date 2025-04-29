@@ -1,0 +1,43 @@
+name: Build and Publish
+
+on:
+  push:
+    branches: main
+  pull_request:
+
+jobs:
+  build:
+    name: Build and create release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+          
+      - name: Setup Hollow Knight
+        uses: BadMagic100/setup-hk@v1
+        with:
+            apiPath: References/
+
+      - name: Setup MSBuild
+        run: sudo apt-get install -y nuget mono-devel mono-xbuild
+
+      - name: Restore packages
+        run: nuget restore BossStatueFramework.csproj
+
+      - name: Build project
+        run: dotnet build --configuration Release
+
+      - name: Get SHA256 of zipped mod
+        id: get_hash
+        run: echo "hash=$(sha256sum Output/BossStatueFramework.zip | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
+
+      - name: Get Assembly version
+        id: get_version
+        run: echo "version=$(cat < Version.txt)" >> $GITHUB_OUTPUT
+
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: Output/BossStatueFramework.zip
+          release_name: Release v${{ steps.get_version.outputs.version }}
+          body: "SHA256: ${{ steps.get_hash.outputs.hash }}"
