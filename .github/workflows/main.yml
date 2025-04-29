@@ -41,5 +41,6 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           artifacts: Output/BossStatueFramework.zip
-          name: Release v${{ steps.get_version.outputs.version }}
+          name: "Release v${{ steps.get_version.outputs.version }}"
           body: "SHA256: ${{ steps.get_hash.outputs.hash }}"
+          tag: ${{ steps.get_version.outputs.version }}
